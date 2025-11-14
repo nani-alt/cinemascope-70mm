@@ -1,65 +1,126 @@
-import Image from "next/image";
+"use client"; // ✅ Make this a client component
+
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
+  const [movies, setMovies] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Fetch trending movies on first load
+  useEffect(() => {
+    async function loadTrending() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/trending");
+        const data = await res.json();
+        setMovies(data.results || []);
+      } catch (error) {
+        console.error("Error fetching trending:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTrending();
+  }, []);
+
+  // ✅ Handle search
+  async function handleSearch(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setMovies(data.results || []);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-black text-white">
+      {/* 🎞️ Hero Section */}
+      <section
+        className="relative h-[70vh] flex flex-col justify-center items-center text-center bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1517602302552-471fe67acf66?auto=format&fit=crop&w=1400&q=80')",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/70"></div>
+        <h1 className="text-5xl md:text-7xl font-extrabold z-10 text-white tracking-wide">
+          Cinemascope 70mm
+        </h1>
+        <p className="text-gray-300 mt-4 text-lg z-10 max-w-xl">
+          Discover your favorite films in stunning 70mm cinematic style 🎥
+        </p>
+
+        {/* 🔍 Search Bar */}
+        <form
+          onSubmit={handleSearch}
+          className="mt-6 z-10 flex w-full justify-center"
+        >
+          <input
+            type="text"
+            placeholder="🔍 Search movies..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-80 md:w-96 px-4 py-3 rounded-full text-black bg-white/90 border shadow-xl focus:ring-2 focus:ring-red-500 placeholder-gray-500"
+          />
+        </form>
+      </section>
+      <Link
+        href="/favourites"
+        className="absolute top-6 right-6 bg-white/10 border border-white/20 px-4 py-2 rounded-full hover:bg-white/20 transition"
+      >
+        ❤️ Favourites
+      </Link>
+
+      {/* 🎬 Movies Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <h2 className="text-3xl font-bold mb-8 text-red-500">
+          {query ? `🎥 Results for "${query}"` : "🔥 Trending This Week"}
+        </h2>
+
+        {loading ? (
+          <p className="text-gray-400 text-center">Loading...</p>
+        ) : movies.length === 0 ? (
+          <p className="text-gray-400 text-center">
+            No movies found. Try another search.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {movies.map((movie) => (
+              <Link key={movie.imdbID} href={`/movie/${movie.imdbID}`}>
+                <Card className="bg-zinc-900 border-zinc-800 hover:scale-105 hover:shadow-lg hover:shadow-red-600/20 transition-transform duration-300 overflow-hidden cursor-pointer">
+                  <CardContent className="p-0">
+                    <img
+                      src={
+                        movie.Poster && movie.Poster !== "N/A"
+                          ? movie.Poster
+                          : "https://via.placeholder.com/300x450?text=No+Image"
+                      }
+                      alt={movie.Title}
+                      className="w-full h-72 object-cover"
+                    />
+                    <div className="p-3">
+                      <h3 className="font-semibold text-white truncate">
+                        {movie.Title}
+                      </h3>
+                      <p className="text-sm text-gray-400">🎬 {movie.Year}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }

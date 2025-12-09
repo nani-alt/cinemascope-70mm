@@ -16,7 +16,7 @@ export default function FavouritesPage() {
 
       for (const id of stored) {
         const res = await fetch(
-          `https://www.omdbapi.com/?apikey=${process.env.NEXT_PUBLIC_OMDB_KEY}&i=${id}`
+          `https://www.omdbapi.com/?apikey=${process.env.NEXT_PUBLIC_OMDB_API_KEY}&i=${id}`
         );
         const data = await res.json();
         if (data.Response !== "False") movies.push(data);
@@ -30,7 +30,6 @@ export default function FavouritesPage() {
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10">
-      {/* Back Button */}
       <Link
         href="/"
         className="inline-flex items-center gap-2 px-4 py-2 bg-black/60 text-white rounded-full border border-white/20 hover:bg-black/80 transition mb-6"
